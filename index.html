@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUIZ CHAMPIONS - Vinh Danh Nhà Vô Địch</title>
+    
+    <!-- Google Fonts with explicit Vietnamese subsetting & reliable fallbacks -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Fredoka:wght@500;600;700&family=Lexend:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Custom Tailwind Configuration for Pastel Celebration Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            lavender: '#DCCBFF',
+                            purple: '#BCA4F5',
+                            yellow: '#FFF0B8',
+                            peach: '#FFCBAA',
+                            pink: '#FFD6E5',
+                            cream: '#FFF9F0',
+                            darkPurple: '#60458C',
+                            mint: '#D2F5E3',
+                            sky: '#CBE6FF'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'Lexend', 'Be Vietnam Pro', 'system-ui', '-apple-system', 'sans-serif'],
+                        vietnam: ['Be Vietnam Pro', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        heading: ['Lexend', 'Be Vietnam Pro', 'system-ui', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 30px -5px rgba(96, 69, 140, 0.08)',
+                        'card': '0 4px 20px -2px rgba(96, 69, 140, 0.06)',
+                        'lift': '0 20px 35px -10px rgba(96, 69, 140, 0.15)',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-10px) rotate(3deg)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
+                            '50%': { opacity: 1, transform: 'scale(1.05)' }
+                        },
+                        bounceSoft: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        }
+                    },
+                    animation: {
+                        float: 'float 5s ease-in-out infinite',
+                        pulseGlow: 'pulseGlow 3s ease-in-out infinite',
+                        bounceSoft: 'bounceSoft 2s infinite'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #FFF9F0;
+            color: #4A336C;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        h1, h2, h3, .font-fredoka {
+            font-family: 'Lexend', 'Fredoka', 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFF9F0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #DCCBFF;
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #BCA4F5;
+        }
+
+        .bg-grid-pattern {
+            background-image: radial-gradient(#BCA4F5 1.2px, transparent 1.2px);
+            background-size: 24px 24px;
+            opacity: 0.25;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(220, 203, 255, 0.5);
+        }
+
+        .gradient-border {
+            border: 2px solid transparent;
+            background-image: linear-gradient(white, white), linear-gradient(to right, #BCA4F5, #FFCBAA);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+
+        .sticker-hover {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .sticker-hover:hover {
+            transform: scale(1.08) rotate(-2deg);
+        }
+
+        /* Smooth state transitions */
+        .fade-in-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="relative min-h-screen selection:bg-pastel-lavender selection:text-pastel-darkPurple">
+
+    <!-- Ambient Grid Background -->
+    <div class="fixed inset-0 bg-grid-pattern pointer-events-none z-0"></div>
+
+    <!-- Background Decorative SVG Blobs -->
+    <div class="fixed -top-24 -left-24 w-96 h-96 bg-pastel-lavender/30 rounded-full blur-3xl pointer-events-none z-0"></div>
+    <div class="fixed top-1/2 -right-24 w-96 h-96 bg-pastel-pink/30 rounded-full blur-3xl pointer-events-none z-0"></div>
+    <div class="fixed -bottom-24 left-1/3 w-96 h-96 bg-pastel-yellow/40 rounded-full blur-3xl pointer-events-none z-0"></div>
+
+    <!-- Audio Toggle Button (Top Right) -->
+    <div class="fixed top-5 right-5 z-50">
+        <button id="audioToggleBtn" onclick="toggleAudio()" class="flex items-center gap-2 px-4 py-2.5 rounded-full glass-card text-pastel-darkPurple font-medium text-sm shadow-soft hover:shadow-lift transition-all border border-pastel-purple/40 bg-white/90">
+            <span id="audioIcon" class="text-base">🎵</span>
+            <span id="audioText">Bật nhạc nền</span>
+        </button>
+    </div>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-16 md:space-y-24">
+
+        <!-- ================= SECTION 01: HERO / WELCOME SCREEN ================= -->
+        <section id="hero" class="min-h-[85vh] flex flex-col justify-between items-center text-center pt-8 pb-12 relative">
+            
+            <!-- Top Tag -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pastel-lavender/40 border border-pastel-purple/30 text-pastel-darkPurple text-xs sm:text-sm font-semibold tracking-wide uppercase shadow-sm">
+                <span>✨</span>
+                <span>Quiz Xây Dựng & Thực Hiện Pháp Luật</span>
+                <span>✨</span>
+            </div>
+
+            <!-- Main Title Box -->
+            <div class="my-auto space-y-6 max-w-3xl">
+                <!-- Trophy SVG Illustration -->
+                <div class="relative w-36 h-36 sm:w-44 sm:h-44 mx-auto animate-float">
+                    <div class="absolute inset-0 bg-pastel-yellow/60 rounded-full blur-xl animate-pulseGlow"></div>
+                    <svg class="w-full h-full relative z-10 drop-shadow-md" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Trophy Base -->
+                        <rect x="65" y="155" width="70" height="16" rx="8" fill="#BCA4F5"/>
+                        <rect x="75" y="140" width="50" height="18" rx="4" fill="#DCCBFF"/>
+                        <!-- Trophy Stem -->
+                        <path d="M92 115H108V142H92V115Z" fill="#FFCBAA"/>
+                        <!-- Trophy Cup -->
+                        <path d="M45 45C45 45 40 95 100 95C160 95 155 45 155 45H45Z" fill="#FFF0B8" stroke="#60458C" stroke-width="4" stroke-linejoin="round"/>
+                        <path d="M55 45H145V70C145 85 125 95 100 95C75 95 55 85 55 70V45Z" fill="#FFF0B8"/>
+                        <!-- Handles -->
+                        <path d="M45 55H32C25 55 20 62 20 70C20 82 30 90 45 88" stroke="#60458C" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M155 55H168C175 55 180 62 180 70C180 82 170 90 155 88" stroke="#60458C" stroke-width="4" stroke-linecap="round"/>
+                        <!-- Star Accent -->
+                        <path d="M100 52L104 62L114 63L106 70L109 80L100 74L91 80L94 70L86 63L96 62L100 52Z" fill="#FFCBAA"/>
+                        <!-- Sparkles -->
+                        <circle cx="30" cy="35" r="4" fill="#FFD6E5"/>
+                        <circle cx="170" cy="35" r="5" fill="#BCA4F5"/>
+                        <path d="M165 110L168 118L176 121L168 124L165 132L162 124L154 121L162 118L165 110Z" fill="#FFF0B8"/>
+                    </svg>
+                </div>
+
+                <div class="space-y-3">
+                    <p class="font-fredoka text-xl sm:text-2xl text-pastel-darkPurple tracking-wide italic">"Cùng đoán xem..."</p>
+                    <h1 class="font-fredoka text-5xl sm:text-7xl font-bold tracking-tight text-pastel-darkPurple drop-shadow-sm">
+                        QUIZ CHAMPIONS
+                    </h1>
+                </div>
+
+                <p class="text-base sm:text-lg text-slate-600 max-w-xl mx-auto font-medium leading-relaxed">
+                    Chào mừng bạn đến với không gian vinh danh đặc biệt dành riêng cho 8 đội chơi đầy xuất sắc. Ai sẽ là người bước lên bục cao nhất?
+                </p>
+
+                <!-- CTA Button -->
+                <div class="pt-4">
+                    <a href="#selection-section" class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-pastel-purple via-pastel-lavender to-pastel-pink text-pastel-darkPurple font-bold text-lg shadow-lift hover:scale-105 hover:shadow-2xl transition-all duration-300 border-2 border-white/80">
+                        <span>KHÁM PHÁ NHÀ VÔ ĐỊCH</span>
+                        <svg class="w-5 h-5 animate-bounceSoft" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer Badge -->
+            <div class="text-xs sm:text-sm font-medium text-slate-500 flex items-center gap-1.5 pt-6">
+                <span>Made with love from</span>
+                <span class="font-fredoka font-bold text-pastel-darkPurple bg-pastel-yellow px-2.5 py-0.5 rounded-full border border-yellow-200">Bát Quái ♡</span>
+            </div>
+        </section>
+
+
+        <!-- ================= SECTION 02: WINNER SELECTION (GRID) ================= -->
+        <section id="selection-section" class="scroll-mt-10 space-y-10">
+            <!-- Section Header -->
+            <div class="text-center space-y-3 max-w-2xl mx-auto">
+                <span class="px-3 py-1 rounded-full bg-pastel-pink/60 text-pastel-darkPurple text-xs font-bold uppercase tracking-wider">
+                    Dự đoán & Vinh danh
+                </span>
+                <h2 class="font-fredoka text-3xl sm:text-5xl font-bold text-pastel-darkPurple">
+                    NHÓM NÀO SẼ LÀ NHÀ VÔ ĐỊCH?
+                </h2>
+                <p class="text-slate-600 font-medium text-sm sm:text-base">
+                    "8 đội chơi, 8 màu sắc riêng và chỉ một cái tên được xướng lên"
+                </p>
+            </div>
+
+            <!-- Grid of 8 Groups -->
+            <div id="groupsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <!-- Dynamically populated via JavaScript -->
+            </div>
+        </section>
+
+
+        <!-- ================= SECTION 03: CELEBRATION MOMENT (DYNAMIC) ================= -->
+        <section id="champion-display" class="hidden transition-all duration-500">
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-pastel-cream via-white to-pastel-yellow/30 p-8 sm:p-12 border-2 border-pastel-purple/30 shadow-lift text-center space-y-8">
+                
+                <!-- Decorative Top Badge -->
+                <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-pastel-yellow text-pastel-darkPurple font-fredoka font-bold text-sm sm:text-base border border-amber-200 shadow-sm animate-bounceSoft">
+                    <span>👑</span>
+                    <span>QUIZ CHAMPIONS 2026</span>
+                    <span>👑</span>
+                </div>
+
+                <!-- Main Celebration Header -->
+                <div class="space-y-4">
+                    <p class="font-fredoka text-2xl sm:text-3xl text-pastel-purple font-bold tracking-wide">
+                        TING TING! CHÚNG TA CÓ NHÀ VÔ ĐỊCH!
+                    </p>
+                    <h2 id="winnerTitle" class="font-fredoka text-4xl sm:text-6xl font-extrabold text-pastel-darkPurple tracking-tight uppercase drop-shadow-sm">
+                        <!-- Winner name injected here -->
+                    </h2>
+                    <p class="text-slate-600 font-medium max-w-xl mx-auto italic text-sm sm:text-base">
+                        "Chiến thắng này chính là thành quả của những nỗ lực mà cả đội đã cùng nhau tạo nên."
+                    </p>
+                </div>
+
+                <!-- Large Winner Icon Illustration -->
+                <div class="relative w-32 h-32 sm:w-40 sm:h-40 mx-auto">
+                    <div class="absolute inset-0 bg-pastel-purple/20 rounded-full blur-2xl"></div>
+                    <div class="w-full h-full rounded-3xl bg-pastel-lavender/50 border-2 border-pastel-purple flex items-center justify-center text-6xl sm:text-7xl shadow-inner relative z-10">
+                        🏆
+                    </div>
+                </div>
+
+                <!-- Switch Winner Button -->
+                <div class="pt-2">
+                    <button onclick="resetWinnerSelection()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-pastel-darkPurple font-semibold text-sm border border-pastel-purple/40 shadow-sm hover:bg-pastel-lavender/20 transition-all">
+                        <span>🔄</span>
+                        <span>Chọn lại đội khác</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= SECTION 04: CHAMPION ROSTER ================= -->
+        <section id="roster-section" class="hidden space-y-8">
+            <div class="text-center space-y-2">
+                <h3 class="font-fredoka text-2xl sm:text-4xl font-bold text-pastel-darkPurple">
+                    ĐỘI HÌNH NHÀ VÔ ĐỊCH
+                </h3>
+                <p class="text-slate-600 text-sm sm:text-base font-medium">
+                    "Mỗi thành viên là một mảnh ghép làm nên chiến thắng hôm nay."
+                </p>
+            </div>
+
+            <!-- Members Cards Grid -->
+            <div id="membersGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Member cards injected dynamically -->
+            </div>
+        </section>
+
+
+        <!-- ================= SECTION 05: GRAND FINALE CARD & SCROLL TOP ================= -->
+        <section id="finale-section" class="hidden space-y-12">
+            <!-- Grand Finale Card -->
+            <div class="relative rounded-3xl bg-pastel-yellow/80 border-2 border-amber-200 p-8 sm:p-12 text-center space-y-6 shadow-soft overflow-hidden">
+                <!-- Floating Decorative Icons -->
+                <span class="absolute top-4 left-6 text-2xl opacity-60">✨</span>
+                <span class="absolute bottom-4 right-6 text-3xl opacity-60">🎉</span>
+                <span class="absolute top-6 right-10 text-2xl opacity-60">💖</span>
+                
+                <div class="space-y-3 relative z-10">
+                    <h2 id="cheerHeadline" class="font-fredoka text-3xl sm:text-5xl font-extrabold text-pastel-darkPurple tracking-wide uppercase">
+                        <!-- SĨ LÊN ĐI [TÊN NHÓM]!!!! -->
+                    </h2>
+                    <p class="text-pastel-darkPurple/80 font-medium text-sm sm:text-base max-w-lg mx-auto">
+                        Cảm ơn tất cả các thành viên đã cống hiến hết mình, mang lại một mùa Quiz vô cùng sôi nổi và rực rỡ!
+                    </p>
+                </div>
+
+                <div class="inline-block px-6 py-2 rounded-full bg-white/80 border border-amber-300 text-pastel-darkPurple font-fredoka font-semibold text-sm">
+                    🎓 Luật Học - Kỷ Niệm Đáng Nhớ
+                </div>
+            </div>
+
+            <!-- Back to Top Button -->
+            <div class="text-center pt-4">
+                <button onclick="scrollToTop()" class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white text-pastel-darkPurple font-bold text-sm border-2 border-pastel-lavender shadow-soft hover:bg-pastel-lavender/30 hover:scale-105 transition-all duration-300">
+                    <span>⬆️</span>
+                    <span>QUAY LẠI ĐẦU TRANG</span>
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+
+    <!-- ================= MODAL: CONFIRMATION PROMPT ================= -->
+    <div id="confirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-pastel-darkPurple/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-6 border-2 border-pastel-purple/40 shadow-lift text-center transform scale-95 transition-transform duration-300" id="modalCard">
+            
+            <div class="w-16 h-16 bg-pastel-pink/60 rounded-2xl flex items-center justify-center text-3xl mx-auto">
+                🌟
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="font-fredoka text-2xl font-bold text-pastel-darkPurple">Xác nhận nhà vô địch</h3>
+                <p class="text-slate-600 text-sm font-medium">
+                    Bạn có chắc chắn <span id="modalGroupName" class="font-bold text-pastel-darkPurple text-base"></span> là đội chiến thắng?
+                </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <button id="cancelModalBtn" class="w-full sm:w-1/2 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-all">
+                    Để xem lại
+                </button>
+                <button id="confirmWinnerBtn" class="w-full sm:w-1/2 py-3 px-4 rounded-xl bg-pastel-purple hover:bg-purple-400 text-white font-bold text-sm shadow-md transition-all">
+                    Chắc chắn rồi! 🎉
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // ================= 1. GROUPS & MEMBERS DATA STRUCTURE =================
+        const GROUPS_DATA = [
+            {
+                id: 1,
+                name: "NHÓM 1 – DU HỌC SINH THỦ ĐỨC",
+                icon: "✈️",
+                badgeBg: "bg-pastel-sky",
+                cardBg: "bg-gradient-to-br from-white to-blue-50/50",
+                members: [
+                    "Lê Hà Phương Thảo",
+                    "Trần Thuỵ Quỳnh Anh",
+                    "Phạm Quỳnh Tuyết Nhi",
+                    "Tôn Nữ Thảo Nguyên",
+                    "Nguyễn Ngọc Ninh",
+                    "Nguyễn Ngọc Quỳnh",
+                    "Nguyễn Thị Thuỳ Dung",
+                    "Trần Nguyên Nhật Thy"
+                ]
+            },
+            {
+                id: 2,
+                name: "NHÓM 2 – LGBTQ+",
+                icon: "🌈",
+                badgeBg: "bg-pastel-pink",
+                cardBg: "bg-gradient-to-br from-white to-pink-50/50",
+                members: [
+                    "Lê Bảo Duy",
+                    "Nguyễn Ngọc Hà Linh",
+                    "Phan Diễm Trang",
+                    "Lê Thị Thu Hà",
+                    "Đỗ Thị Thu Hương",
+                    "Diệp Gia Bảo",
+                    "Lê Hữu Đăng Khoa",
+                    "Lê Thị Ngọc Thúy",
+                    "Hoàng Lê Thảo Nguyên"
+                ]
+            },
+            {
+                id: 3,
+                name: "NHÓM 3 – GWIYOMI",
+                icon: "🎀",
+                badgeBg: "bg-pastel-lavender",
+                cardBg: "bg-gradient-to-br from-white to-purple-50/50",
+                members: [
+                    "Nguyễn Lê Anh Thư",
+                    "Nguyễn Ngô Xuân Nhi",
+                    "Phùng Ngọc Ái Linh",
+                    "Vũ Minh Xuân",
+                    "Nguyễn Thanh Thảo",
+                    "Đặng Thị Ngọc Hân",
+                    "Trần Ngọc Anh Thư",
+                    "Bùi Lê Thị Thu Ngân"
+                ]
+            },
+            {
+                id: 4,
+                name: "NHÓM 4 – BÁ KHÍ",
+                icon: "⚡",
+                badgeBg: "bg-pastel-yellow",
+                cardBg: "bg-gradient-to-br from-white to-amber-50/50",
+                members: [
+                    "Trần Thanh Thảo",
+                    "Võ Tường Ninh",
+                    "Nguyễn Ngọc Nhi",
+                    "Thái Thị Bảo Ngọc",
+                    "Nguyễn Ngọc Phước An",
+                    "Nguyễn Phạm Bảo Trân",
+                    "Phạm Thị Xuân Mai",
+                    "Võ Thị Thu Ngân",
+                    "Hà Tố My"
+                ]
+            },
+            {
+                id: 5,
+                name: "NHÓM 5 – ĐỆ THẦY NAM",
+                icon: "🔥",
+                badgeBg: "bg-pastel-peach",
+                cardBg: "bg-gradient-to-br from-white to-orange-50/50",
+                members: [
+                    "Nguyễn Hoàng Phi Nhung",
+                    "Lý Kim Ngân",
+                    "Bùi Thị Thuỷ Tiên",
+                    "Dương Ngọc Ánh",
+                    "Nguyễn Thị Minh Huyền",
+                    "Nguyễn Lê Ngọc Mai",
+                    "Nguyễn Lê Phước Hồng",
+                    "Nguyễn Ngọc Vi"
+                ]
+            },
+            {
+                id: 6,
+                name: "NHÓM 6 – NHÓM SÌ LÂY",
+                icon: "💅",
+                badgeBg: "bg-pastel-pink",
+                cardBg: "bg-gradient-to-br from-white to-rose-50/50",
+                members: [
+                    "Đỗ Phạm Linh Tâm",
+                    "Huỳnh Nguyễn Kim Khánh",
+                    "Đinh Nguyễn Gia Hân",
+                    "Trịnh Phương Anh Thư",
+                    "Phan Thị Thùy Lâm",
+                    "Lê Thị Phương Linh",
+                    "Đào Như Ý"
+                ]
+            },
+            {
+                id: 7,
+                name: "NHÓM 7 – THƯỢNG LƯU HÀN QUẮC",
+                icon: "💎",
+                badgeBg: "bg-pastel-lavender",
+                cardBg: "bg-gradient-to-br from-white to-indigo-50/50",
+                members: [
+                    "Nguyễn Công Thảo Yên",
+                    "Trần Thị Kim Oanh",
+                    "Nguyễn Ngọc Khánh Vy",
+                    "Nguyễn Lê Bảo Trâm",
+                    "Nguyễn Hoàng Bảo Ngân",
+                    "Quách Ngọc Như Ý",
+                    "Đinh Ngọc Yến Nhi",
+                    "Trịnh Phương Uyên"
+                ]
+            },
+            {
+                id: 8,
+                name: "NHÓM 8 – ĐỒNG BẰNG SÔNG CỬU LONG",
+                icon: "🌾",
+                badgeBg: "bg-pastel-mint",
+                cardBg: "bg-gradient-to-br from-white to-emerald-50/50",
+                members: [
+                    "Hồ Lê Kiều Trang",
+                    "Huỳnh Khả Thi",
+                    "Nguyễn Lê Gia An",
+                    "Lý Khải Minh",
+                    "Dương Ánh Linh",
+                    "Tô Thuỳ Dương",
+                    "Nguyễn Ngọc Gia Hân",
+                    "Phan Tuyết Mai",
+                    "Ngô Thị Kim Oanh"
+                ]
+            }
+        ];
+
+        // Member decorative icons
+        const MEMBER_DECORATIONS = ["⭐", "💖", "👑", "✨", "🍀", "🏆", "🌸", "⭐"];
+        const CARD_PASTELS = ["bg-pastel-pink/30", "bg-pastel-lavender/30", "bg-pastel-yellow/40", "bg-pastel-peach/30", "bg-pastel-mint/30", "bg-pastel-sky/30"];
+
+        let selectedGroupId = null;
+        let audioContext = null;
+        let isAudioPlaying = false;
+        let audioInterval = null;
+
+        // ================= 2. DOM INITIALIZATION =================
+        window.onload = function() {
+            renderGroupCards();
+            triggerInitialConfetti();
+        };
+
+        // Render 8 Group Selection Cards
+        function renderGroupCards() {
+            const grid = document.getElementById("groupsGrid");
+            grid.innerHTML = "";
+
+            GROUPS_DATA.forEach(group => {
+                const memberCount = group.members.length; // Dynamically counted
+                
+                const card = document.createElement("div");
+                card.className = `${group.cardBg} rounded-2xl p-5 border border-pastel-purple/30 shadow-card hover:shadow-lift transition-all duration-300 cursor-pointer flex flex-col justify-between group hover:-translate-y-1 relative overflow-hidden`;
+                card.onclick = () => openConfirmationModal(group.id);
+
+                card.innerHTML = `
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="w-10 h-10 rounded-xl ${group.badgeBg} flex items-center justify-center text-xl shadow-sm">
+                                ${group.icon}
+                            </span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/80 border border-pastel-purple/20 text-pastel-darkPurple">
+                                ${memberCount} thành viên
+                            </span>
+                        </div>
+                        <h3 class="font-fredoka text-lg font-bold text-pastel-darkPurple group-hover:text-purple-700 transition-colors">
+                            ${group.name}
+                        </h3>
+                    </div>
+                    
+                    <div class="pt-4 mt-2 flex items-center justify-between text-xs font-semibold text-pastel-darkPurple/70 border-t border-slate-100">
+                        <span>Chọn nhóm này</span>
+                        <span class="text-base group-hover:translate-x-1 transition-transform">➔</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ================= 3. SELECTION & MODAL LOGIC =================
+        function openConfirmationModal(groupId) {
+            selectedGroupId = groupId;
+            const group = GROUPS_DATA.find(g => g.id === groupId);
+            
+            document.getElementById("modalGroupName").innerText = `"${group.name}"`;
+            
+            const modal = document.getElementById("confirmModal");
+            const modalCard = document.getElementById("modalCard");
+            
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                modalCard.classList.remove("scale-95");
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("confirmModal");
+            const modalCard = document.getElementById("modalCard");
+            
+            modal.classList.add("opacity-0");
+            modalCard.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 300);
+        }
+
+        document.getElementById("cancelModalBtn").onclick = closeModal;
+        document.getElementById("confirmWinnerBtn").onclick = function() {
+            closeModal();
+            if (selectedGroupId !== null) {
+                confirmWinner(selectedGroupId);
+            }
+        };
+
+        // ================= 4. CONFIRM WINNER & RENDER CELEBRATION =================
+        function confirmWinner(groupId) {
+            const group = GROUPS_DATA.find(g => g.id === groupId);
+            if (!group) return;
+
+            // 1. Update Title and Headlines
+            document.getElementById("winnerTitle").innerText = group.name;
+            document.getElementById("cheerHeadline").innerText = `SĨ LÊN ĐI ${group.name}!!!!`;
+
+            // 2. Render Roster Members
+            renderMembersRoster(group.members);
+
+            // 3. Show Celebration Sections
+            const secDisplay = document.getElementById("champion-display");
+            const secRoster = document.getElementById("roster-section");
+            const secFinale = document.getElementById("finale-section");
+
+            secDisplay.classList.remove("hidden");
+            secRoster.classList.remove("hidden");
+            secFinale.classList.remove("hidden");
+
+            secDisplay.classList.add("fade-in-up");
+            secRoster.classList.add("fade-in-up");
+            secFinale.classList.add("fade-in-up");
+
+            // 4. Smooth scroll to victory card
+            secDisplay.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // 5. Fire Special Confetti Burst
+            triggerWinnerConfetti();
+        }
+
+        function renderMembersRoster(members) {
+            const container = document.getElementById("membersGrid");
+            container.innerHTML = "";
+
+            members.forEach((name, index) => {
+                const deco = MEMBER_DECORATIONS[index % MEMBER_DECORATIONS.length];
+                const bgTint = CARD_PASTELS[index % CARD_PASTELS.length];
+
+                const card = document.createElement("div");
+                card.className = `${bgTint} glass-card rounded-2xl p-4 flex items-center gap-3 shadow-card hover:shadow-lift transition-all duration-300 hover:-translate-y-1 border border-white`;
+
+                card.innerHTML = `
+                    <div class="w-9 h-9 rounded-xl bg-white/90 flex items-center justify-center font-fredoka font-bold text-pastel-darkPurple text-sm shadow-sm flex-shrink-0">
+                        ${index + 1}
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <p class="font-bold text-pastel-darkPurple text-sm sm:text-base truncate">
+                            ${name}
+                        </p>
+                    </div>
+                    <div class="text-base flex-shrink-0">
+                        ${deco}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function resetWinnerSelection() {
+            document.getElementById("selection-section").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ================= 5. CONFETTI ANIMATIONS =================
+        function triggerInitialConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 40,
+                    spread: 60,
+                    origin: { y: 0.6 },
+                    colors: ['#DCCBFF', '#BCA4F5', '#FFF0B8', '#FFCBAA', '#FFD6E5']
+                });
+            }
+        }
+
+        function triggerWinnerConfetti() {
+            if (typeof confetti !== 'function') return;
+
+            const duration = 3 * 1000;
+            const animationEnd = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#DCCBFF', '#BCA4F5', '#FFF0B8', '#FFCBAA', '#FFD6E5']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#DCCBFF', '#BCA4F5', '#FFF0B8', '#FFCBAA', '#FFD6E5']
+                });
+
+                if (Date.now() < animationEnd) {
+                    requestAnimationFrame(frame);
+                }
+            })();
+        }
+
+        // ================= 6. AMBIENT SYNTH AUDIO (WEB AUDIO API) =================
+        function toggleAudio() {
+            if (isAudioPlaying) {
+                stopAmbientAudio();
+            } else {
+                startAmbientAudio();
+            }
+        }
+
+        // Upbeat, festive & rhythmic synthesizer background music
+        function startAmbientAudio() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+
+                isAudioPlaying = true;
+                document.getElementById("audioText").innerText = "Tắt nhạc nền";
+                document.getElementById("audioIcon").innerText = "🔊";
+
+                // Upbeat Celebration Chords & Melody Sequence (BPM ~ 128)
+                const melodyNotes = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25, 523.25, 659.25, 587.33, 698.46, 880.00, 1174.66, 880.00, 698.46, 587.33, 698.46];
+                const bassNotes = [261.63, 261.63, 349.23, 349.23, 392.00, 392.00, 261.63, 392.00];
+                let beat = 0;
+
+                audioInterval = setInterval(() => {
+                    if (!isAudioPlaying) return;
+
+                    const now = audioContext.currentTime;
+
+                    // Lead Melody Arpeggio
+                    const freq = melodyNotes[beat % melodyNotes.length];
+                    playUpbeatSynthNote(freq, 'triangle', 0.08, 0.18, now);
+
+                    // Energetic Bassline (every 2 beats)
+                    if (beat % 2 === 0) {
+                        const bassFreq = bassNotes[(beat / 2) % bassNotes.length] / 2;
+                        playUpbeatSynthNote(bassFreq, 'sawtooth', 0.12, 0.25, now);
+                    }
+
+                    // Upbeat Rhythm / Percussion Ticks (Hi-hat & Snare simulation)
+                    if (beat % 2 === 1) {
+                        playNoiseTick(now, 0.04); // Hi-hat tick
+                    }
+                    if (beat % 4 === 2) {
+                        playSnarePop(now); // Snare beat
+                    }
+
+                    beat++;
+                }, 220); // ~130 BPM tempo
+
+            } catch (e) {
+                console.log("Audio play blocked by browser policy.", e);
+            }
+        }
+
+        function playUpbeatSynthNote(freq, type, gainVol, duration, time) {
+            if (!audioContext) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, time);
+
+            gain.gain.setValueAtTime(0.01, time);
+            gain.gain.linearRampToValueAtTime(gainVol, time + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.start(time);
+            osc.stop(time + duration);
+        }
+
+        function playNoiseTick(time, duration) {
+            if (!audioContext) return;
+            const bufferSize = audioContext.sampleRate * duration;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+
+            const whiteNoise = audioContext.createBufferSource();
+            whiteNoise.buffer = buffer;
+
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = 5000;
+
+            const gain = audioContext.createGain();
+            gain.gain.setValueAtTime(0.03, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+            whiteNoise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioContext.destination);
+
+            whiteNoise.start(time);
+        }
+
+        function playSnarePop(time) {
+            if (!audioContext) return;
+            playUpbeatSynthNote(180, 'sine', 0.1, 0.08, time);
+            playNoiseTick(time, 0.08);
+        }
+
+        // ================= 7. FIREWORKS & FANFARE SOUND EFFECT =================
+        function playFireworksSoundEffect() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+
+                const now = audioContext.currentTime;
+
+                // 1. Victory Fanfare Chords (C Major -> F Major -> G Major -> High C)
+                const fanfare = [
+                    { f: 523.25, t: 0.0, d: 0.18 },
+                    { f: 659.25, t: 0.12, d: 0.18 },
+                    { f: 783.99, t: 0.24, d: 0.18 },
+                    { f: 1046.50, t: 0.36, d: 0.6 }
+                ];
+
+                fanfare.forEach(note => {
+                    playUpbeatSynthNote(note.f, 'triangle', 0.2, note.d, now + note.t);
+                    playUpbeatSynthNote(note.f * 1.005, 'sawtooth', 0.1, note.d, now + note.t); // chorus thickness
+                });
+
+                // 2. Fireworks Explosions simulation (multiple pops and crackles)
+                const explosionTimes = [0.0, 0.25, 0.5, 0.75, 1.0];
+                explosionTimes.forEach(delay => {
+                    playExplosionPop(now + delay);
+                });
+
+            } catch (e) {
+                console.log("Fireworks audio error", e);
+            }
+        }
+
+        function playExplosionPop(startTime) {
+            if (!audioContext) return;
+
+            // Low frequency boom
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, startTime);
+            osc.frequency.exponentialRampToValueAtTime(30, startTime + 0.35);
+
+            gain.gain.setValueAtTime(0.25, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.start(startTime);
+            osc.stop(startTime + 0.35);
+
+            // Sparkling noise crackle
+            const bufferSize = audioContext.sampleRate * 0.4;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+            }
+
+            const noise = audioContext.createBufferSource();
+            noise.buffer = buffer;
+
+            const noiseGain = audioContext.createGain();
+            noiseGain.gain.setValueAtTime(0.12, startTime);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+
+            noise.connect(noiseGain);
+            noiseGain.connect(audioContext.destination);
+
+            noise.start(startTime);
+        }
+
+        function stopAmbientAudio() {
+            isAudioPlaying = false;
+            if (audioInterval) clearInterval(audioInterval);
+            document.getElementById("audioText").innerText = "Bật nhạc nền";
+            document.getElementById("audioIcon").innerText = "🎵";
+        }
+
+        // Updated confirm function trigger including sound effect
+        const originalConfirmWinner = confirmWinner;
+        confirmWinner = function(groupId) {
+            playFireworksSoundEffect();
+            originalConfirmWinner(groupId);
+        };
+    </script>
+</body>
+</html>
